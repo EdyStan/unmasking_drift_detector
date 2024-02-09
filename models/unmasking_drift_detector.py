@@ -31,10 +31,12 @@ def drift_detector(S,T,threshold = 0.05, min_feature_percentage_remaining=0.3, n
     train_idx, test_idx = np.split(idx, 2)
     predictions = np.zeros(labels.shape)
 
-    # Predict the given features using the chosen model. If the index is at least 1,
-    # check if the current AUC score is different from the one at index 0. If yes,
-    # return true. Otherwise, remove an arbitrary number of features(=`features_dropped`), namely the ones with 
-    # the highest values. Repeat for an arbitrary number of iterations (=`no_batches`).
+    # 1. A model is applied over the old+new data points, and evaluates the AUC score between the true labels
+    # (which mark the old data as 0 and the new data as 1) with the predicted ones.   
+    # 2. If this is the first iteration, the AUC score is stored in a variable, else, the AUC score is compared with the first one. 
+    # 3. In case the difference between the AUC scores reaches a threshold, a drift is detected and the loop is interrupted. 
+    # 4. Else, an arbitrary number of the most important features is removed and the iteration 
+    # is continued until a certain percentage of the initial features is left.
     for i in range(no_batches):
         clf.fit(ST[train_idx], labels[train_idx])
         probs = clf.predict_proba(ST[test_idx])[:, 1]

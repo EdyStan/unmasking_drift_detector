@@ -12,7 +12,7 @@ The algorithm operates through the following steps:
 
 3. In case the difference between the AUC scores reaches a threshold, a drift is detected and the loop is interrupted. 
 
-4. Else, an arbitrary number of the most distinctive features is removed and the iteration is continued until a certain percentage of the initial features is left.
+4. Else, an arbitrary number of the most important features is removed and the iteration is continued until a certain percentage of the initial features is left.
 
 ### Validation technique
 
