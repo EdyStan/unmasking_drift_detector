@@ -15,13 +15,18 @@ For each iteration, the algorithm performs the following steps:
 
 ### Validation technique
 
-To validate the results of the model, two custom metrics were created: `Average Drift Gap` and `Maximum Drift Gap`.
+To validate the performance of the drift detector, 4 custom drifted datasets were used. Each dataset was created through the following steps:
 
-The data sets used for the validation step are:
+1. Beginning with two datasets, the first was utilized to train a ResNet18 CNN for up to 25 epochs to ensure effective prediction of values.
+2. The second dataset was then combined with the first in known batches, facilitating identification of concept drift locations.
+3. This merged dataset was input into the ResNet18 model, and features were extracted from the average pooling layer.
 
-- [Spam](https://github.com/vlosing/driftDatasets)
-- [Elec2](https://github.com/vlosing/driftDatasets)
-- [CovType](https://github.com/vlosing/driftDatasets)
-- [SVHN](http://ufldl.stanford.edu/housenumbers/) (preprocessed with a ResNet18 CNN)
+With the datasets prepared, the drift detector was applied to identify the drifts. The results are presented in `Results.pdf` and were compared against [D3 drift detector](https://github.com/ogozuacik/d3-discriminative-drift-detector-concept-drift).
 
-Finally, a fair comparison was made between "Unmasking" drift detector and "D3" drift detector.
+The original datasets utilized to generate the custom datasets, according to the explanation above, are as follows:
+
+- First dataset: [SVHN](http://ufldl.stanford.edu/housenumbers/) (labels 0-4), Second dataset: [SVHN](http://ufldl.stanford.edu/housenumbers/) (labels 5-9).
+- First dataset: [SVHN](http://ufldl.stanford.edu/housenumbers/), Second dataset: [MNIST](https://paperswithcode.com/dataset/mnist). 
+- First dataset: [CIFAR100](https://www.cs.toronto.edu/~kriz/cifar.html) (labels 0 - 49), Second dataset: [CIFAR100](https://www.cs.toronto.edu/~kriz/cifar.html) (labels 50 - 99).
+- First dataset: [CIFAR100](https://www.cs.toronto.edu/~kriz/cifar.html) (labels 0 - 49), Second dataset: [MNIST](https://paperswithcode.com/dataset/mnist). 
+

@@ -12,10 +12,10 @@ from sklearn.model_selection import train_test_split
 # S: Source (Old Data)
 # T: Target (New Data)
 # ST: S&T combined
-def drift_detector(S,T,threshold = 0.05, min_feature_percentage_remaining=0.3, no_batches=6):
+def drift_detector(S,T,threshold = 0.56, min_feature_percentage_remaining=0.3, iterations=6):
     # Compute the number of features that are going to be dropped with each iteration
     # as a function of the minimum percentage of features that we want in the end, and the number of iterations
-    percentage_per_batch = np.round((1-min_feature_percentage_remaining) / no_batches, 2)
+    percentage_per_batch = np.round((1-min_feature_percentage_remaining) / iterations, 2)
     features_dropped = np.floor(T.shape[1] * percentage_per_batch).astype(int)
     T = pd.DataFrame(T)
     S = pd.DataFrame(S)
@@ -30,21 +30,27 @@ def drift_detector(S,T,threshold = 0.05, min_feature_percentage_remaining=0.3, n
     np.random.shuffle(idx)
     train_idx, test_idx = np.split(idx, 2)
     predictions = np.zeros(labels.shape)
+    all_auc = []
 
-    # 1. A model is applied over the old+new data points, and evaluates the AUC score between the true labels
-    # (which mark the old data as 0 and the new data as 1) with the predicted ones.   
-    # 2. If this is the first iteration, the AUC score is stored in a variable, else, the AUC score is compared with the first one. 
-    # 3. In case the difference between the AUC scores reaches a threshold, a drift is detected and the loop is interrupted. 
-    # 4. Else, an arbitrary number of the most important features is removed and the iteration 
-    # is continued until a certain percentage of the initial features is left.
-    for i in range(no_batches):
+    # For each iteration, the code performs the following steps:
+    # 1. Fit the classifier (`clf`) to the training data (`ST[train_idx]`) 
+    # where label 0 corresponds to the old data and label 1 corresponds to the new data.
+    # 2. Predict the probabilities of the test data (`ST[test_idx]`) belonging to class 1 (new data) using the classifier.
+    # 3. Calculate the AUC score using the true and the predicted labels.
+    # 4. If the mean AUC score (stored in `all_auc`) exceeds a predefined threshold, return True, 
+    # meaning that a concept drift was detected.
+    # 5. If the mean AUC score doesn't exceed the threshold, select the features with the 
+    # smallest coefficients (as determined by `clf.coef_`) and remove them from the feature matrix ST.
+    # 6. If the loop completes without meeting the threshold, return False, 
+    # indicating that no significant concept drift was detected.
+
+    for _ in range(iterations):
         clf.fit(ST[train_idx], labels[train_idx])
         probs = clf.predict_proba(ST[test_idx])[:, 1]
         predictions[test_idx] = probs
         auc_score = AUC(labels, predictions)
-        if i == 0:
-            first_score = auc_score
-        elif first_score - auc_score > threshold:
+        all_auc.append(auc_score)
+        if np.mean(all_auc) > threshold:
             return True
         removed_features_idx = np.argsort(np.abs(clf.coef_))[0,-features_dropped:]
         ST = np.delete(ST, removed_features_idx, axis=1)
