@@ -19,7 +19,7 @@ To validate the performance of the drift detector, 4 custom drifted datasets wer
 
 1. Beginning with two datasets, the first was utilized to train a ResNet18 CNN for up to 25 epochs to ensure effective prediction of values.
 2. The second dataset was then combined with the first in known batches, facilitating identification of concept drift locations.
-3. This merged dataset was input into the ResNet18 model, and features were extracted from the average pooling layer.
+3. This merged dataset was input into the ResNet18 model, and features were extracted from the global average pooling layer.
 
 With the datasets prepared, the drift detector was applied to identify the drifts. The results are presented in `Results.pdf` and were compared against [D3 drift detector](https://github.com/ogozuacik/d3-discriminative-drift-detector-concept-drift).
 
